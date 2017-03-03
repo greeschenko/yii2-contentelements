@@ -1,0 +1,23 @@
+{
+    "name": "greeschenko/yii2-content-elements",
+    "description": "Highly variable content elements module help you add static pages, news, posts, etc to your projects",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension","module","elements","content","pages","news","posts","greeschenko"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Oleksiy Hryshchenko",
+            "email": "greeschenko@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*",
+        "2amigos/yii2-file-upload-widget": "~1.0",
+        "rmrevin/yii2-fontawesome": "~2.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "greeschenko\\content-elements\\": ""
+        }
+    }
+}
