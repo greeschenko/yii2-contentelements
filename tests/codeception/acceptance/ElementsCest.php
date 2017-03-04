@@ -26,14 +26,14 @@ class ElementsCest
     //no admin user admin page
     public function tryAdminPageNoRights(AcceptanceTester $I)
     {
-        $I->amOnPage('/pages/admin');
+        $I->amOnPage('/pages/elements/admin');
         $I->see('403');
     }
     //admin page
     public function tryAdminPage(AcceptanceTester $I)
     {
         $this->loginOwner($I);
-        $I->amOnPage('/pages/admin');
+        $I->amOnPage('/pages/elements/admin');
         $I->see('Manage content elements');
     }
     //C
