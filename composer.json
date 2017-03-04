@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "greeschenko\\content-elements\\": ""
+            "greeschenko\\contentelements\\": ""
         }
     }
 }

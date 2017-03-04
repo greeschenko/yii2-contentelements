@@ -2,7 +2,7 @@
 
 use yii\db\Migration;
 
-class m160423_090204_add_elements_table extends Migration
+class m160423_090204_elements_init extends Migration
 {
     public function up()
     {
