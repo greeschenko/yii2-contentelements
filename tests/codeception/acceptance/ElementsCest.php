@@ -17,23 +17,43 @@ class ElementsCest
     {
         $I->amOnPage('/');
         $I->click('Увійти');
+        $I->fillField('input[name="LoginForm[username]"]', 'testadmin@test.t');
+        $I->fillField('input[name="LoginForm[password]"]', 'testpass');
+        $I->click('login-button');
+        $I->dontSee('.help-block-error');
+    }
+
+    private function loginAdmin(AcceptanceTester $I)
+    {
+        $I->amOnPage('/');
+        $I->click('Увійти');
         $I->fillField('input[name="LoginForm[username]"]', 'admin@admin.a');
         $I->fillField('input[name="LoginForm[password]"]', 'adminpass');
         $I->click('login-button');
         $I->dontSee('.help-block-error');
     }
 
+    //guest user admin page
+    public function tryAdminPageGuest(AcceptanceTester $I)
+    {
+        $I->amOnPage('/prozorrosale/user/logout');
+        $I->amOnPage('/pages/elements');
+        $I->see('Вхід');
+    }
+
     //no admin user admin page
     public function tryAdminPageNoRights(AcceptanceTester $I)
     {
-        $I->amOnPage('/pages/elements/admin');
+        $I->amOnPage('/prozorrosale/user/logout');
+        $this->loginOwner($I);
+        $I->amOnPage('/pages/elements');
         $I->see('403');
     }
     //admin page
     public function tryAdminPage(AcceptanceTester $I)
     {
-        $this->loginOwner($I);
-        $I->amOnPage('/pages/elements/admin');
+        $this->loginAdmin($I);
+        $I->amOnPage('/pages/elements');
         $I->see('Manage content elements');
     }
     //C
@@ -41,6 +61,10 @@ class ElementsCest
     {
         $this->tryAdminPage($I);
         $I->click('Create Element');
+
+        if (method_exists($I, 'wait')) {
+            $I->wait(5);
+        }
 
         $I->fillField('#elements-title','testtitle1111');
         $I->fillField('#elements-urld',$this->faker->text(20));

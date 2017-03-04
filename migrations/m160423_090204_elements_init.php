@@ -17,15 +17,6 @@ class m160423_090204_elements_init extends Migration
             'urld' => $this->string(),
             'user_id' => $this->integer()->notNull(),
             'parent' => $this->integer()->notNull()->defaultValue(0),
-            'created_at' => $this->integer(),
-            'updated_at' => $this->integer(),
-            'type' => $this->smallInteger()->notNull()->defaultValue(1),
-            'status' => $this->smallInteger()->notNull()->defaultValue(1),
-        ], $tableOptions);
-
-        $this->createTable('{{%elements_data}}', [
-            'id' => $this->primaryKey(),
-            'element_id' => $this->integer()->notNull(),
             'preview' => $this->text(),
             'content' => $this->text(),
             'tags' => $this->string(),
@@ -33,6 +24,10 @@ class m160423_090204_elements_init extends Migration
             'meta_descr' => $this->string(),
             'meta_keys' => $this->string(),
             'atachments' => $this->string(),
+            'created_at' => $this->integer(),
+            'updated_at' => $this->integer(),
+            'type' => $this->smallInteger()->notNull()->defaultValue(1),
+            'status' => $this->smallInteger()->notNull()->defaultValue(1),
         ], $tableOptions);
     }
 
