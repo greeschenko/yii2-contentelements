@@ -1,0 +1,728 @@
+<?php
+
+date_default_timezone_set('Europe/Kiev');
+
+class ProOrgCest
+{
+    public $auctionpage = '/';
+    public $controlltitle;
+
+    public function _before(AcceptanceTester $I)
+    {
+    }
+
+    public function _after(AcceptanceTester $I)
+    {
+    }
+
+    private function loginOwner(AcceptanceTester $I)
+    {
+        $I->amOnPage('/');
+        $I->click('Увійти');
+        $I->fillField('input[name="LoginForm[username]"]', 'testadmin@test.t');
+        $I->fillField('input[name="LoginForm[password]"]', 'testpass');
+        $I->click('login-button');
+        $I->dontSee('.help-block-error');
+    }
+
+    private function loginProvider(AcceptanceTester $I)
+    {
+        $I->wantTo('log in to site as provider');
+        $I->amOnPage('/');
+        $I->click('Увійти');
+        $I->fillField('input[name="LoginForm[username]"]', 'testmemb1@test.t');
+        $I->fillField('input[name="LoginForm[password]"]', 'testpass');
+        $I->click('login-button');
+        $I->dontSee('.help-block-error');
+    }
+
+    private function loginProvider2(AcceptanceTester $I)
+    {
+        $I->wantTo('log in to site as provider');
+        $I->amOnPage('/');
+        $I->click('Увійти');
+        $I->fillField('input[name="LoginForm[username]"]', 'testmemb2@test.t');
+        $I->fillField('input[name="LoginForm[password]"]', 'testpass');
+        $I->click('login-button');
+        $I->dontSee('.help-block-error');
+    }
+
+    private function fillForm($data,$I)
+    {
+        foreach ($data as $key=>$value) {
+            if (substr($key,0,6) == 'select') {
+                $I->selectOption($key,$value);
+            } else {
+                $I->fillField($key,$value);
+            }
+        }
+    }
+
+    private function findAuction($I,$my=false)
+    {
+        $I->amOnPage($this->auctionpage);
+
+        if ($my) {
+            $I->click('#proauctionssearch-my');
+        }
+        $I->click('button[name="more-search-btn"]');
+        $I->fillField('#proauctionssearch-all',$this->controlltitle);
+        $I->click('button[name="search-btn"]');
+        if (method_exists($I, 'wait')) {
+            $I->wait(5);
+        }
+        $I->click('Детальніше');
+        if (method_exists($I, 'wait')) {
+            $I->wait(3);
+        }
+        $I->see($this->controlltitle);
+    }
+
+    // tests
+
+    public function tryCreateAuction(AcceptanceTester $I)
+    {
+        $this->controlltitle = 'test'.time();
+
+        $I->wantTo('create new auction');
+        $this->loginOwner($I);
+        $I->amOnPage($this->auctionpage);
+        $I->click('#addauctionbtn');
+
+        $I->dontSee('#addauctionform-enquiryperiod_startdate');
+        $I->dontSee('#addauctionform-enquiryperiod_enddate');
+        $I->dontSee('#addauctionform-tenderperiod_startdate');
+        $I->dontSee('#addauctionform-tenderperiod_enddate');
+        $I->dontSee('#addauctionform-type');
+
+        $data = [
+            'select#addauctionform-procurementmethodtype' => 'dgfOtherAssets',
+            'select[id="addauctionform-minimalstep_valueaddedtaxincluded"]' => '1',
+            'select[id="addauctionform-value_valueaddedtaxincluded"]' => '1',
+            'select[id="addauctionform-procuringentity_identifier_scheme"]' =>'UA-EDR',
+            'select[id="additemform-0-unit_code"]' =>'MTK',
+            'select#addauctionform-tenderattempts' => '1',
+            '#addauctionform-dgfid' => '1',
+            '#addauctionform-dgfdecisionid' => '1',
+            '#addauctionform-dgfdecisiondate' => date('Y-m-d',time()),
+            '#addauctionform-title' => $this->controlltitle,
+            '#addauctionform-description' => 'тестовий аукціон тестовий аукціон',
+            '#addauctionform-auctionperiod_startdate' => date('Y-m-d H:i',time()+(60*10)),
+            '#addauctionform-minimalstep_amount' => '100',
+            '#addauctionform-value_amount' => '1000',
+            '#addauctionform-guarantee_amount' => '100',
+            '#additemform-0-description' => 'тестовий аукціон тестовий аукціон',
+            '#additemform-0-quantity' => '23',
+            '#addauctionform-procuringentity_address_countryname' => 'Україна',
+            '#addauctionform-procuringentity_address_locality' => '',
+            '#addauctionform-procuringentity_address_postalcode' => '04209',
+            '#addauctionform-procuringentity_address_region' => 'м. Київ',
+            '#addauctionform-procuringentity_address_streetaddress' => 'вул. Героїв Тестування 1б, оф. 14',
+            '#addauctionform-procuringentity_contactpoint_name' => 'Тестенко Тест Тестович',
+            '#addauctionform-procuringentity_contactpoint_telephone' => '0987899898',
+            '#addauctionform-procuringentity_identifier_id' => '23456754',
+            '#addauctionform-procuringentity_name' => 'ТОВ "ТестоСофт"',
+        ];
+
+        $this->fillForm($data,$I);
+
+        $I->click('#doc_upload_field_illustration');
+        $I->attachFile('#doc_upload_field_illustration','testfile.jpg');
+        if (method_exists($I, 'wait')) {
+            $I->wait(5);
+        }
+        $I->see('testfile.jpg');
+        if (method_exists($I, 'wait')) {
+            $I->wait(3);
+        }
+
+        $I->executeJS('$("#additemform-0-classification_id").val("04000000-8");');
+        $I->executeJS('$("#additemform-0-classification_id").trigger("change");');
+
+        $I->click('#save_auction_to_draft');
+        if (method_exists($I, 'wait')) {
+            $I->wait(3);
+        }
+        $I->see('Аукціон збережено як чернетку');
+    }
+
+    /*public function tryPublishAuction(AcceptanceTester $I)
+    {
+        //Опублікувати запис в ЦБД - дії користувача:
+        //Виконати публікацію
+
+        //!Очікуваний результат:
+
+            //Виконуються автоматичні перевірки:
+            //Всі обов’язкові поля заповнені значеннями потрібного типу
+            //Організатор отримує повідомлення про те, що запис знаходиться в стані очікування публікації в ЦБД
+            //Організатор отримує повідомлення про публікацію в ЦБД з номером оголошеної процедури на кшталт UA-EA-2016-....
+            //Організатор отримує повідомлення про необхідність накладання ЕЦП на документ
+            //Оголошення опубліковане на веб-сайті майданчика
+            //Всі поля, введені користувачем, коректно опубліковані
+
+        $I->wantTo('publish the auction');
+        $this->loginOwner($I);
+        $this->findAuction($I,true);
+        $I->click('#update_auction_btn');
+        if (method_exists($I, 'wait')) {
+            $I->wait(3);
+        }
+        $I->click('#publish_auction_btn');
+        $I->see('Очікування публікації в ЦБД');
+        $I->see('Процедуру опубліковано в ЦБД');
+        $I->see('Нобхідно накласти ЕЦП на документ');
+    }*/
+
+    /*public function tryEditAuction(AcceptanceTester $I)
+    {
+        //Внесення змін
+
+        //Внести зміни до Лоту, опублікувати в ЦБД - дії користувача
+
+            //Внести наступні зміни:
+            //Стартова вартість Лоту
+            //Конкретна назва предмету
+            //Дата початку торгів
+            //Натиснути кнопку “Опублікувати”
+
+        //!Очікуваний результат:
+
+            //Виконуються автоматичні перевірки:
+            //Всі обов’язкові поля заповнені значеннями потрібного типу
+            //Організатор отримує повідомлення про те, що запис знаходиться в стані очікування публікації в ЦБД
+            //Організатор отримує повідомлення про публікацію в ЦБД
+            //Замовник отримує повідомлення про необхідність накладання ЕЦП на документ
+            //Всі поля, введені користувачем, коректно опубліковані
+            //Наявне повідомлення “Електронний цифровий підпис відсутній”
+            //TODO вивчити методи накладанян ЕЦП
+            //Накладання ЕЦП на змінений додаток:
+            //Згідно з 1.3
+
+        $I->wantTo('update the auction');
+        $this->findAuction($I);
+        $I->click('#update_auction_btn');
+
+        $data = [
+            '#addauctionform-value_amount' => '1500',
+            '#additemform-0-description' => 'тестовий товар оновлений',
+            '#addauctionform-tenderperiod_startdate' => date('Y-m-d H:i',time()+(60*20)),
+        ];
+
+        $this->fillForm($data,$I);
+        $I->click('#publish_auction_btn');
+
+        $I->see('Очікування публікації в ЦБД');
+        $I->see('Процедуру опубліковано в ЦБД');
+        $I->see('Нобхідно накласти ЕЦП на документ');
+        $I->see('Електронний цифровий підпис відсутній');
+    }
+
+    public function tryZeroAuction(AcceptanceTester $I)
+    {
+        //Внести зміни до додатку, якщо необхідно скасувати аукціон - дії користувача
+            //Внести нульове значення до наступних полей:
+                //Стартова вартість Лоту
+                //Кількість
+            //Натиснути кнопку “Опублікувати
+
+        //!Очікуваний результат
+
+            //Виконуються автоматичні перевірки:
+            //Всі обов’язкові поля заповнені значеннями потрібного типу
+            //Організатор отримує повідомлення про те, що додаток знаходиться в стані очікування публікації в ЦБД
+            //Організатор отримує повідомлення про публікацію в ЦБД і посилання для перевірки публікації на веб-порталі Уповноваженого органу
+
+            //Всі поля, введені користувачем, коректно опубліковані
+
+        $I->wantTo('cansel auction by zero properties');
+        $this->findAuction($I);
+        $I->click('#update_auction_btn');
+
+        $data = [
+            '#addauctionform-value_amount' => '0',
+            '#additemform-0-quantity' => '0',
+            '#additemform-1-quantity' => '0',
+        ];
+
+        $this->fillForm($data,$I);
+        $I->click('#publish_auction_btn');
+
+        $I->see('Очікування публікації в ЦБД');
+        $I->see('Процедуру опубліковано в ЦБД');
+        $I->see('Переглянути на порталі уповноваженого органу');
+    }
+
+    public function tryAddQuestion(AcceptanceTester $I)
+    {
+        //Задати запитання
+
+            //Дії користувача
+
+            //Задати запитання про лот
+
+        //!Очікуваний результат
+            //Можливість задати запитання
+            //Запитання публікується веб-сайті Майданчика
+            //Інформація про автора запитання/вимоги не розкривається
+
+        $I->wantTo('add question to auction');
+        $I->amOnPage('/site/logout');
+        $this->loginProvider($I);
+        $this->findAuction($I);
+        $I->click('#add_question_btn');
+
+        $I->fillField('input#addquestionform-title', 'testadmin@test.t');
+        $I->fillField('input#addquestionform-description', 'testpass');
+
+        $I->click('#submit_add_question_form');
+        $I->see('Ваше запитання успішно додано');
+    }
+
+    public function haveQuestionMsg(AcceptanceTester $I)
+    {
+        //Отримати повідомлення про запитання
+
+            //Дії користувача
+            //Відсутні. Виконується після подання Учасником запитання
+
+        //!Очікуваний результат
+
+            //Отримати повідомлення про запитання до Лоту в особистому кабінеті Організатора при наступному вході в нього. Повідомлення має бути таким, яке важко пропустити. Оптимально – окреме вікно, яке блокує доступ до кабінету, доки користувач не перейде до Лоту. Інформація про автора запитання не розкривається.
+
+            //Отримати повідомлення про запитання до Лоту електронною поштою. Інформація про автора запитання/вимоги не розкривається
+            //
+        $I->wantTo('view question msg');
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+        $this->showPrivateMsg('Нове запитання');
+        $this->showEmailMsg('Нове запитання');
+    }
+
+    public function haveQuestionMsgRemind(AcceptanceTester $I)
+    {
+        //Отримати нагадування про запитання/вимоги без відповіді
+
+            //Дії користувача
+            //Відсутні. Виконується у випадку ненадання протягом 24 годин Організатором відповіді на запитання до Лоту
+
+        //!Очікуваний результат
+
+            //Отримати нагадування про запитання до Лоту в особистому кабінеті Організатора при наступному вході в нього. Повідомлення бути таким, яке важко пропустити. Оптимально – окреме вікно, яке блокує доступ до кабінету, доки користувач не перейде до Лоту.
+            //Отримати нагадування (щодня) про запитання до Лоту електронною поштою
+        //
+        //TODO пока не понятно как аксептировать подобный функционал
+    }
+
+    public function tryAnswered(AcceptanceTester $I)
+    {
+        //Надати відповідь на запитання
+
+            //Дії користувача
+            //Організатор надає відповідь на запитання на процедуру в цілому
+            //Організатор надає відповідь на запитання на окрему позицію
+            //Додає документи за необхідності
+
+        //!Очікуваний результат
+
+            //Організатор отримує повідомлення про те, що відповідь знаходиться в стані очікування публікації в ЦБД (якщо публікація відбувається одразу, необхідно описати реалізацію цієї вимоги в частині “Адаптований сценарій”)
+        //
+        $I->wantTo('add answerd to question');
+        $this->findAuction($I);
+
+        $I->click('//a[contains(@href, "#tab_questions")]');
+        $I->click('//a[contains(@id, "add_answer_btn_0")]');
+
+        $I->fillField('input#addanswerform-answer', 'test answerd');
+        $I->click('#submit_add_answer_form');
+
+        $I->see('Відповідь успішно додано');
+        $I->click('//a[contains(@href, "#tab_questions")]');
+        $I->see('test answerd');
+
+        $I->amOnPage('/site/logout');
+        $this->loginProvider($I);
+    }
+
+    public function tryMakeBid(AcceptanceTester $I)
+    {
+        //Подати пропозицію
+
+            //Дії користувача
+
+            //Заповнити поля:
+            //Розмір початкової пропозицii
+            //Виконати публікацію
+
+        //!Очікуваний результат
+
+            //Виконуються автоматичні перевірки:
+            //Пропозицію можна подати лише до завершення кінцевого строку подання пропозицій
+            //Всі поля заповнені
+            //Учасник в особистому кабінеті отримує повідомлення про прийняття пропозиції Майданчиком та перевірку гарантійного внеску/банківської гарантії
+
+        //TODO подумать как возможно обойти длительный таймаут
+        $I->wait(60*15);
+        $I->wantTo('add bid to auction');
+        $this->findAuction($I);
+        $I->click('#add_bid_btn');
+        $I->fillField('input#addbidform-sum', '2222');
+        $I->click('#submit_add_bid_form');
+        $I->see('Вашу пропозицію прийнято до розгляду');
+        $I->see('2222');
+        $I->see('Не розглянуто');
+        $this->showPrivateMsg('Вашу пропозицію прийнято до розгляду');
+    }
+
+    public function tryEditBid(AcceptanceTester $I)
+    {
+        //Внести зміни до пропозиції
+
+            //Дії користувача
+
+            //Внести наступні зміни в полях Лоту:
+                //Початкова цінова пропозиції
+                //Оновити окремі файли, завантажені при створенні пропозиції
+                //Додати нові файли
+            //Натиснути кнопку “Опублікувати”
+
+        //!Очікуваний результат
+
+            //Виконуються автоматичні перевірки:
+            //Внести зміни можна лише до завершення кінцевого строку подання тендерних пропозицій
+            //Всі поля коректно заповнені
+            //Учасник в особистому кабінеті отримує повідомлення про прийняття пропозиції Майданчиком та початку валідації Учасника та/або перевірку гарантійного внеску/банківської гарантії
+        //
+        //
+        $I->wantTo('edit bid');
+        $this->findAuction($I);
+        $I->click('#edit_bid_btn');
+        $I->fillField('input#addbidform-sum', '3333');
+        $I->click('#submit_add_bid_form');
+        $I->see('Вашу пропозицію прийнято до розгляду');
+        $I->see('3333');
+        $I->see('Не розглянуто');
+
+        $I->click('#add_doc_to_bid');
+        $I->attachFile('#prouploadform-filedata','testfile.jpg');
+        $I->click('#submit_add_file_form');
+        $I->see('testfile.jpg');
+
+        $I->click('#file_edit_0');
+        $I->attachFile('#prouploadform-filedata','testfile1.jpg');
+        $I->click('#submit_add_file_form');
+        $I->see('testfile1.jpg');
+        $this->showPrivateMsg('Вашу пропозицію прийнято до розгляду');
+    }
+
+    public function showSuccessValidation(AcceptanceTester $I)
+    {
+        //Отримати повідомлення про успішну валідацію
+
+            //Дії користувача
+            //Відсутні. Виконується після подання Учасником пропозиції
+
+        //!Очікуваний результат
+
+            //Отримати повідомлення в особистому кабінеті Учасника при наступному вході в нього. Повідомлення має бути таким, яке важко пропустити. Оптимально – окреме вікно, яке блокує доступ до кабінету, доки користувач не перейде до аукціону.
+            //Отримати повідомлення електронною поштою.
+            //В повідомленні повідомляється про публікацію в ЦБД пропозиції і вкладених файлів, дату і час публікації, дату і час початку аукціону і посилання на аукціон в режимі учасника
+        //
+        $I->wantTo('view success bid validation');
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+        $this->findAuction($I);
+        $I->click('#bid_0_validate');
+        $I->see('Прийнято','#bid_0_status');
+        $I->amOnPage('/site/logout');
+        $this->loginProvider($I);
+        //TODO реализовать мигание сообщений и тултип подсказку "Ви маєте не прочитані повідомлення"
+        $this->showPrivateMsg('Вашу пропозицію прийнято и збережено до ЦБД');
+        $this->showEmailMsg('Вашу пропозицію прийнято и збережено до ЦБД');
+    }
+
+    public function hasWinnerMsg(AcceptanceTester $I)
+    {
+        //Отримати повідомлення про визнання Учасника переможцем аукціону
+
+            //Дії користувача
+
+            //Відсутні. Виконується в момент визнання Учасником переможцем
+
+        //!Очікуваний результат
+            //Отримати повідомлення про визнання Учасника переможцем при наступному вході в кабінет і необхідність підписати Протокол на протязі трьох діб.
+            //Отримати повідомлення про визнання Учасника переможцем електронною поштою і необхідність підписати Протокол на протязі трьох діб.
+        //
+        //TODO большой вопрос как эмулировать окончание аукциона или найти завершенный аукцион из прошлих
+        $I->wantTo('view winner msg');
+        $this->showPrivateMsg('Вас визнано переможцем аукціону');
+        $this->showEmailMsg('Вас визнано переможцем аукціону');
+    }
+
+    public function hasSecondPlaceMsg(AcceptanceTester $I)
+    {
+        //Отримати повідомлення про визнання Учасника Кандидатом наступним за переможцем
+
+            //Дії користувача
+            //Відсутні. Виконується в момент зайняття Учасником другого місця
+
+        //!Очікуваний результат
+
+            //Отримати повідомлення про зайняття Учасником другого місця в аукціоні при наступному вході в кабінет і про можливість не забирати гарантійний внесок на протязі 10 робочих днів під час яких Переможець аукціону може бути дискваліфікований. В інтерфейсі повідомлення є кнопка “Забираю гарантійний внесок зараз”, при натисканні на неї в ЦБД передається інформація про те, що другий кандидат відсутній.
+
+            //Отримати повідомлення про зайняття Учасником другого місця в аукціоні  електронною поштою і про можливість не забирати гарантійний внесок на протязі 15 робочих днів під час яких Переможець аукціону може бути дискваліфікований. В інтерфейсі повідомлення є кнопка “Підтверджую згоду не повертати гарантійний внесок протягом 10 діб” та “Забираю гарантійний внесок зараз”. При натисканні кнопки “Підтверджую згоду не повертати гарантійний внесок протягом 10 діб” в ЦБД передається інформація про те, що другий кандидат знаходиться в режимі очікування. При натисканні кнопки “Забираю гарантійний внесок зараз” в ЦБД передається інформація про те, що другий кандидат відсутній.
+
+        //TODO необходимо расширить добавив тести функций ожидания и забирания внеску
+    }
+
+    public function tryPublishSignedProtocol(AcceptanceTester $I)
+    {
+        //Публікація кандидатом підписаного протоколу
+
+            //Дії користувача
+            //Кандидат завантажує до документів підписаний протокол результатів електронного аукціону. Виконується в момент зайняття Кандидатом першого місця.
+
+        //!Очікуваний результат
+            //Кандидат отримує повідомлення про те, що документи завантажились успішно і проходять перевірку.
+        $I->wantTo('publish signed protocol');
+        $this->findAuction($I); //TODO возможно нужна другая функция поиска состоявшигося аукциона
+        $I->see('Ви переможець аукціону');
+        $I->click('#add_signed_protocol');
+
+        $I->attachFile('#addprotocolform-file','testprotocol.pdf');
+        $I->click('#add_protocol_submit_btn');
+        $I->see('Протокол успішно завантажений та проходить перевірку');
+    }
+
+    public function tryAwardCandidat(AcceptanceTester $I)
+    {
+        //Кваліфікація Кандидата / Перевірка ліквідатором підписаного протоколу
+
+            //Дії користувача
+
+            //Ліквідатор перевіряє протокол результатів електронного аукціону підписаний учасником. Виконується після завантаження кандидатом такого протоколу до документів. Після ручної перевірки ліквідатор натискає кнопку “Кандидат кваліфікований” або “Кандидат дискваліфікований”.
+
+        //!Очікуваний результат
+
+        //Система переходить до етапу очікування оплати або дискваліфікує учасника і призначає Кандидатом другого за ціновою пропозицією учасника.
+        //
+        $I->wantTo('award candidate');
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+        $this->findAuction($I); //TODO возможно нужна другая функция поиска состоявшигося аукциона
+        $I->see('Підписаний протокол');
+        $I->see('Кандидат дискваліфікований');
+        $I->see('Кандидат кваліфікований');
+        $I->click('Кандидат кваліфікований');
+        $I->see('Кваліцікація прошла успішно, очікування оплати');
+    }
+
+    public function tryUploadPaymentDocs(AcceptanceTester $I)
+    {
+        //переможець завантажє документи що підтверджують оплату
+        //
+        $I->wantTo('upload payment docs');
+        $I->amOnPage('/site/logout');
+        $this->loginProvider($I);
+        $this->findAuction($I); //TODO возможно нужна другая функция поиска состоявшигося аукциона
+        $I->see('Завантажити платіжні документи');
+        $I->click('Завантажити платіжні документи');
+        $I->see('Платіжні документи успішно завантажені та проходять перевірку');
+    }
+
+    public function tryCheckPayment(AcceptanceTester $I)
+    {
+        //Перевірка ліквідатором оплати
+
+            //Дії користувача
+
+            //Ліквідатор перевіряє, що оплата здійснена і кваліфікує або дискваліфікує учасника
+
+        //!Очікуваний результат
+
+            //Система переходить до етапу очікування підписання договору або дискваліфікує учасника і призначає Кандидатом другого за ціновою пропозицією учасника.
+        //
+        $I->wantTo('chack user payment');
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+        $this->findAuction($I); //TODO возможно нужна другая функция поиска состоявшигося аукциона
+        $I->see('Платіжні документи');
+        $I->click('Перейти до підписання договору');
+        $I->see('Аукціон переведено до етапу очікування підписання договору');
+    }
+
+    public function tryPublishContract(AcceptanceTester $I)
+    {
+        //Опублікувати договір
+
+            //Дії користувача
+
+            //Організатор завантажує договір в систему, вказуючи тип документу.
+            //Зазначає наступні обов'язкові поля:
+                //Номер договору
+                //Дату підписання
+                //Строк дії договору
+            //У випадку помилкового завантаженого документу користувач може змінити цей документ
+
+        //!Очікуваний результат
+
+            //Виконуються автоматичні перевірки:
+            //Всі обов’язкові поля заповнені значеннями потрібного типу
+            //В інтерфейсі майданчика відображається повідомлення про те, що договір знаходиться в стані очікування публікації в ЦБД (якщо публікація відбувається одразу, необхідно описати реалізацію цієї вимоги в частині “Адаптований сценарій”)
+            //Всі поля, введені користувачем, коректно опубліковані
+            //Всі документи, завантажені Організатором, коректно опубліковані і завантажуються
+            //У випадку зміни документу, стара версія на сайтах майданчиків відображається перекресленою
+
+        $I->wantTo('publish contract');
+        $I->click('Завантажити договір');
+        $I->attachFile('#addcontractform-file','testcontract.pdf');
+        $I->click('#add_contract_submit_btn');
+        $I->see('Очікування публікації','#contract_status');
+        $I->click('Оновити договір');
+        $I->attachFile('#addcontractform-file','testcontract.pdf');
+        $I->click('#add_contract_submit_btn');
+        $I->see('Договір оновлено успішно');
+    }
+
+    public function tryActivateContract(AcceptanceTester $I)
+    {
+        //Активація договору
+
+            //Дії користувача
+            //Аналогічно кроку 1.3 сценарію
+
+        //!Очікуваний результат
+            //Замовник отримує повідомлення про публікацію в ЦБД і посилання для перевірки публікації на веб-порталі Уповноваженого органу
+            //Договір опублікований на офіцйіному веб-порталі і веб-сайті майданчика
+            //Договір знаходиться у статусі “Підписаний” (active)
+        //
+        $I->wantTo('activate contract');
+        $I->click('Опублікувати договір','#publish_auction_contract_btn');
+
+        $I->see('Очікування публікації в ЦБД');
+        $I->see('Договір опубліковано в ЦБД');
+    }
+
+    //////////////////////////////////negative branch
+    //
+    //
+    public function tryCanselBid(AcceptanceTester $I)
+    {
+        //Скасувати пропозицію на процедуру/лот
+
+            //Дії користувача
+
+            //Скасувати пропозицію
+
+        //!Очікуваний результат
+            //Можливість скасування пропозиції присутня до кінцевого строку подання пропозицій
+            //При виконанні розкриття поданих пропозицій по процедурі, скасована пропозиція не розкривається
+
+        $I->wantTo('try to cansel bid');
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+
+        $this->tryCreateAuction($I);
+        $this->tryPublishAuction($I);
+
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+
+        $this->findAuction($I); //TODO возможно сделать отдельну переменую которую брать из созданого аукциона
+
+        $this->tryMakeBid($I);
+        $I->click('#cansel-bid');
+        $I->see('Вашу пропозицію скасовано');
+
+        $this->tryMakeBid($I);
+    }
+
+    public function showNotSuccessValidation(AcceptanceTester $I)
+    {
+        //Отримати повідомлення про неуспішну валідацію
+
+            //Дії користувача
+            //Відсутні. Виконується після подання Учасником пропозиції
+
+        //!Очікуваний результат
+
+            //Отримати повідомлення в особистому кабінеті Учасника при наступному вході в нього. Повідомлення має бути таким, яке важко пропустити. Оптимально – окреме вікно, яке блокує доступ до кабінету, доки користувач не перейде до аукціону.
+            //Отримати повідомлення електронною поштою.
+            //В повідомленні повідомляється про неуспішне проходження валідації (з вказанням причини) або відсутність гарантійного внеску / банківської гаранії та лінк на пропозицію для внесення змін
+
+        $I->wantTo('view not success bid validation');
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+        $this->findAuction($I);
+        $I->click('Відхилити пропозицію','#bid_0_reject');
+
+        $I->fillField('#reject_reason', 'погана погана пропозиція');
+        $I->click('Зберегти','#save_bid_reject_btn');
+
+        $I->see('Відхилено','#bid_0_status');
+        $I->see('погана погана пропозиція','#bid_0_status_reason');
+
+        $I->amOnPage('/site/logout');
+        $this->loginProvider($I);
+        //TODO реализовать мигание сообщений и тултип подсказку "Ви маєте не прочитані повідомлення"
+        $this->showPrivateMsg('Вашу пропозицію відхилено');
+        $this->showEmailMsg('Вашу пропозицію відхилено');
+    }
+
+    public function tryCanselAuction(AcceptanceTester $I)
+    {
+        //Скасування аукціону
+
+            //Дії користувача
+
+            //Скасувати аукціон, зазначивши причину скасування
+
+        //!Очікуваний результат
+
+            //Процедура переведена в статус “Торги відмінено”, або “Не відбулися”
+            //Причини скасування опубліковані на Майданчику
+            //Цінові пропозиції, якщо ще не були розкриті,не розкриваються
+        //
+        $I->wantTo('cansel auction');
+        $I->amOnPage('/site/logout');
+        $this->loginOwner($I);
+        $this->findAuction($I);
+        $I->click('Скасувати аукціон','#auction_cansel');
+        $I->see('Аукціон скасовано');
+    }
+
+    public function showCanselationMsg(AcceptanceTester $I)
+    {
+        //Отримати повідомлення про скасування Аукціону, на який Учасник задавав запитання чи подавав пропозиції
+
+            //Дії користувача
+
+            //Відсутні. Виконується після скасування Організатором аукціону.
+            //Повідомлення має надходити незалежно від стадії, на якій було скасовано процедуру аукціону
+
+        //!Очікуваний результат
+
+            //Отримати повідомлення про скасування Організатором Аукціону в особистому кабінеті при наступному вході в нього.
+            //Отримати повідомлення про скасування Організатором Аукціону  електронною поштою
+            //Якщо скасування відбулось до розкриття пропозицій, пропозиції, подані на скасований аукціон, не розкриваються та не оприлюднюються
+        //
+        $I->wantTo('view auction canselation msg');
+        $I->amOnPage('/site/logout');
+        $this->loginProvider($I);
+        $this->showPrivateMsg('Повідомлення про скасування аукціону');
+        $this->showEmailMsg('Повідомлення про скасування аукціону');
+    }
+
+    public function checkCanselIfNoBids(AcceptanceTester $I)
+    {
+        //Скасувати процедуру у випадку відсутності пропозицій
+
+            //Дії користувача
+
+            //Відсутні. Дія виконується автоматично
+
+        //!Очікуваний результат
+
+            //Лот/Аукціон переведені в статус “Торги не відбулися”
+    }*/
+}
