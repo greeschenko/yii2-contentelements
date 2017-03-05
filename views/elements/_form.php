@@ -71,7 +71,9 @@ $model->atachments = ($model->atachments != '')
         </div>
         <div class="col-md-3">
             <?= $form->field($model, 'urld')->textInput(['maxlength' => true]) ?>
-            <?= $form->field($model, 'parent')->dropDownList(['0' => 'root']) ?>
+            <?= $form->field($model, 'parent')
+                ->dropDownList($model->getParentList(),
+                    ['options' => [$model->id => ['disabled' => true]]]) ?>
             <?= $form->field($model, 'type')->dropDownList($model->typelist) ?>
             <?= $form->field($model, 'status')->dropDownList($model->statuslist) ?>
 

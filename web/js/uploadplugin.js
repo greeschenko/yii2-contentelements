@@ -1,7 +1,7 @@
 $.Redactor.prototype.advanced = function() {
     return {
         init: function() {
-            var button = this.button.add('advanced', 'Add image');
+            var button = this.button.add('advanced', 'Add image/file');
             this.iid = this.$textarea.attr('id');
 
             this.button.setAwesome('advanced', 'fa-upload');

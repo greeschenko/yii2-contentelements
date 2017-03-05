@@ -4,6 +4,7 @@ namespace greeschenko\contentelements\models;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "{{%elements}}".
@@ -84,6 +85,7 @@ class Elements extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['title'], 'required'],
             [['urld'], 'required'],
             [['urld'], 'unique'],
             [['user_id', 'parent', 'created_at', 'updated_at', 'type', 'status'], 'integer'],
@@ -115,5 +117,29 @@ class Elements extends \yii\db\ActiveRecord
             'type' => Yii::t('app', 'Type'),
             'status' => Yii::t('app', 'Status'),
         ];
+    }
+
+    public function getParentList($parent=0,$lvl=0)
+    {
+        $res = [];
+        if ($parent == 0) {
+            $res = ['0' => Yii::t('cont_elem', 'Root Page')];
+        }
+        $data = self::find()
+            ->select('id, title')
+            ->where(['parent' => $parent])
+            ->andWhere(['status' => self::STATUS_PUBLISHED])
+            ->andWhere(['type' => self::TYPE_DINAMIC])
+            ->all();
+
+        if (count($data) > 0) {
+            foreach ($data as $one) {
+                $lvlstr = str_repeat('--',$lvl);
+                $res[$one->id] = $lvlstr.' '.$one->title;
+                $res = ArrayHelper::merge($res,$this->getParentList($one->id,$lvl+1));
+            }
+        }
+
+        return $res;
     }
 }

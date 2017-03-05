@@ -66,7 +66,7 @@ class ElementsCest
             $I->wait(5);
         }
 
-        $I->fillField('#elements-title','testtitle1111');
+        $I->fillField('#elements-title',$this->faker->text(20));
         $I->fillField('#elements-urld',$this->faker->text(20));
         $I->fillField('#elements-preview',$this->faker->text(40));
 
@@ -77,9 +77,9 @@ class ElementsCest
         $I->fillField('#elements-meta_descr',$this->faker->text(70));
         $I->fillField('#elements-meta_keys','test, testtest, testtesttest');
 
-        $I->selectOption('#elements-type',1);
-        $I->selectOption('#elements-status',1);
-        /*$I->fillField('#elements-parent',$this->faker->text(20));*/
+        $I->selectOption('#elements-type',2);
+        $I->selectOption('#elements-status',2);
+        $I->selectOption('#elements-parent',rand(3,4));
 
         $I->click('#element_upload_file');
         $I->attachFile('#element_upload_file','testfile.jpg');

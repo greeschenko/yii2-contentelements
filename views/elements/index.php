@@ -31,6 +31,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'urld:url',
             'user_id',
             'parent',
+            'type',
+            'status',
             // 'preview:ntext',
             // 'content:ntext',
             // 'tags',
@@ -40,8 +42,6 @@ $this->params['breadcrumbs'][] = $this->title;
             // 'atachments',
             // 'created_at',
             // 'updated_at',
-            // 'type',
-            // 'status',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],
