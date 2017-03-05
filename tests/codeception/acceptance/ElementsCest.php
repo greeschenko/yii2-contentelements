@@ -69,7 +69,7 @@ class ElementsCest
         $I->fillField('#elements-title','testtitle1111');
         $I->fillField('#elements-urld',$this->faker->text(20));
         $I->fillField('#elements-preview',$this->faker->text(40));
-        $I->fillField('#elements-content',$this->faker->text(160));
+        $I->fillField('.redactor-editor',$this->faker->text(160));
         $I->fillField('#elements-tags','test, testtest, testtesttest');
         $I->fillField('#elements-meta_title',$this->faker->text(30));
         $I->fillField('#elements-meta_descr',$this->faker->text(70));
@@ -85,7 +85,7 @@ class ElementsCest
             $I->wait(5);
         }
 
-        $I->see('testfile.jpg');
+        $I->see('testfile');
 
         $I->click('Create');
 
