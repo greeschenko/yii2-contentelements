@@ -84,7 +84,8 @@ class Elements extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id'], 'required'],
+            [['urld'], 'required'],
+            [['urld'], 'unique'],
             [['user_id', 'parent', 'created_at', 'updated_at', 'type', 'status'], 'integer'],
             [['preview', 'content'], 'string'],
             [['title', 'urld', 'tags', 'meta_title', 'meta_descr', 'meta_keys', 'atachments'], 'string', 'max' => 255],

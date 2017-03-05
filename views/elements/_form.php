@@ -23,9 +23,22 @@ $model->atachments = ($model->atachments != '')
         $model->isNewRecord
             ? Yii::t('cont_elem', 'Create')
             : Yii::t('cont_elem', 'Save'),
-        ['class' => 'btn btn-success']) ?>
+        ['class' => 'btn btn-success','id' => 'create_element_submit']) ?>
+    <?= Html::a(
+        Yii::t('cont_elem', 'Create New'),
+        ['create'],
+        ['class' => 'btn btn-default','target' => '_blunk']) ?>
+    <?php if (!$model->isNewRecord): ?>
+        <?= Html::a(
+            Yii::t('cont_elem', 'Copy'),
+            ['copy','id' => $model->id],
+            ['class' => 'btn btn-info']) ?>
+        <?= Html::a(
+            Yii::t('cont_elem', 'Delete'),
+            ['delete','id' => $model->id],
+            ['class' => 'btn btn-danger']) ?>
+    <?php endif; ?>
     </div>
-
     <div class="row">
         <div class="col-md-9">
             <?= $form->field($model, 'title')->textInput(['maxlength' => true]) ?>
@@ -58,7 +71,7 @@ $model->atachments = ($model->atachments != '')
         </div>
         <div class="col-md-3">
             <?= $form->field($model, 'urld')->textInput(['maxlength' => true]) ?>
-            <?= $form->field($model, 'parent')->textInput() ?>
+            <?= $form->field($model, 'parent')->dropDownList(['0' => 'root']) ?>
             <?= $form->field($model, 'type')->dropDownList($model->typelist) ?>
             <?= $form->field($model, 'status')->dropDownList($model->statuslist) ?>
 
@@ -79,6 +92,30 @@ $model->atachments = ($model->atachments != '')
             <?= Upload::widget([
                 'id' => 'element_upload_file',
                 'groupcode' => $model->atachments,
+            ]);?>
+    </div>
+
+    <div class="hidden">
+            <?= Upload::widget([
+                'id' => 'elements-contentupload',
+                'groupcode' => $model->atachments.'_tmp',
+                'clientEvents' => [
+                    'fileuploaddone' => 'function(e, data) {
+                        var item = data.result.files;
+                        if ( item.type == 1 ) {
+                            var html = \'<img src="\'+item.big+\'" alt=""/>\'
+                            $("#elements-content").redactor("insert.html", html);
+                        }else{
+                            var html = \'<a href="\'+item.url+\'">\'+item.name+\'</a>\'
+                            $("#elements-content").redactor("insert.html", html);
+                        }
+                    }',
+                    'fileuploadfail' => 'function(e, data) {
+                                            alert("error");
+                                            console.log(e);
+                                            console.log(data);
+                                        }',
+                ],
             ]);?>
     </div>
 
