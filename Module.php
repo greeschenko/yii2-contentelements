@@ -8,6 +8,8 @@ class Module extends \yii\base\Module
 {
     const VER = '0.0.1-dev';
 
+    public $userclass;
+
     public function init()
     {
         parent::init();
@@ -20,6 +22,10 @@ class Module extends \yii\base\Module
         ];
 
         $this->registerTranslations();
+
+        if (!$this->userclass) {
+            throw new \yii\web\HttpException(501 ,Yii::t('cont_elem', 'user class not specified in the config file'));
+        }
     }
 
     public function registerTranslations()

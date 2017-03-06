@@ -26,16 +26,44 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
 
-            'id',
             'title',
             'urld:url',
-            'user_id',
-            'parent',
-            'type',
-            'status',
+            [
+                'attribute'=>'user_id',
+                'filter'=>$searchModel->getAdminsList(),
+                'content'=>function ($data) {
+                    return $data->user->username;
+                },
+            ],
+            [
+                'attribute'=>'parent',
+                'filter'=>$searchModel->getParentList(),
+                'content'=>function ($data) {
+                    $res = Yii::t('cont_elem', 'root page');
+                    if ($data->parent != 0 and isset($data->parentData)) {
+                        $res = $data->parentData->title;
+                    }
+
+                    return $res;
+                },
+            ],
+            [
+                'attribute'=>'type',
+                'filter'=>$searchModel->typelist,
+                'content'=>function ($data) {
+                    return $data->typelist[$data->type];
+                },
+            ],
+            [
+                'attribute'=>'status',
+                'filter'=>$searchModel->statuslist,
+                'content'=>function ($data) {
+                    return $data->statuslist[$data->type];
+                },
+            ],
+            'tags',
             // 'preview:ntext',
             // 'content:ntext',
-            // 'tags',
             // 'meta_title',
             // 'meta_descr',
             // 'meta_keys',
@@ -43,7 +71,10 @@ $this->params['breadcrumbs'][] = $this->title;
             // 'created_at',
             // 'updated_at',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template' => '{update}<br>{delete}'
+            ],
         ],
     ]); ?>
     <?php Pjax::end(); ?>

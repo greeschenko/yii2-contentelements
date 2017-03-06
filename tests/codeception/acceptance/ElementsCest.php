@@ -3,6 +3,8 @@
 class ElementsCest
 {
     private $faker;
+    private $title;
+    private $tags;
 
     public function _before(AcceptanceTester $I)
     {
@@ -15,6 +17,7 @@ class ElementsCest
 
     private function loginOwner(AcceptanceTester $I)
     {
+        $I->amOnPage('/prozorrosale/user/logout');
         $I->amOnPage('/');
         $I->click('Увійти');
         $I->fillField('input[name="LoginForm[username]"]', 'testadmin@test.t');
@@ -25,6 +28,7 @@ class ElementsCest
 
     private function loginAdmin(AcceptanceTester $I)
     {
+        $I->amOnPage('/prozorrosale/user/logout');
         $I->amOnPage('/');
         $I->click('Увійти');
         $I->fillField('input[name="LoginForm[username]"]', 'admin@admin.a');
@@ -66,20 +70,24 @@ class ElementsCest
             $I->wait(5);
         }
 
-        $I->fillField('#elements-title',$this->faker->text(20));
+        $this->title = $this->faker->text(20);
+
+        $I->fillField('#elements-title',$this->title);
         $I->fillField('#elements-urld',$this->faker->text(20));
         $I->fillField('#elements-preview',$this->faker->text(40));
 
         $I->fillField('.redactor-editor',$this->faker->text(160));
 
-        $I->fillField('#elements-tags','test, testtest, testtesttest');
+        $this->tags = $this->faker->word().'_'.$this->faker->word();
+
+        $I->fillField('#elements-tags',$this->tags);
         $I->fillField('#elements-meta_title',$this->faker->text(30));
         $I->fillField('#elements-meta_descr',$this->faker->text(70));
         $I->fillField('#elements-meta_keys','test, testtest, testtesttest');
 
         $I->selectOption('#elements-type',2);
         $I->selectOption('#elements-status',2);
-        $I->selectOption('#elements-parent',rand(3,4));
+        $I->selectOption('#elements-parent',rand(4,5));
 
         $I->click('#element_upload_file');
         $I->attachFile('#element_upload_file','testfile.jpg');
@@ -102,12 +110,11 @@ class ElementsCest
     public function tryAdminFindAndRead(AcceptanceTester $I)
     {
         $this->tryAdminPage($I);
-        $I->fillField('#admin-elements-search-all','testtitle1111');
+        $I->fillField('ElementsSearch[title]',$this->title);
         if (method_exists($I, 'wait')) {
             $I->wait(5);
         }
-        $I->click('.admin_view_bnt');
-        $I->see('testtitle1111');
+        $I->see($this->tags);
     }
         //frontend static page
     public function tryPublicPageRead(AcceptanceTester $I)
@@ -123,31 +130,29 @@ class ElementsCest
     //U
     public function tryAdminFindAndUpdate(AcceptanceTester $I)
     {
-        $contr_string = 'new unic text for element content 49303';
-        $this->tryAdminPage($I);
-        $I->fillField('#admin-elements-search-all','testtitle1111');
-        if (method_exists($I, 'wait')) {
-            $I->wait(5);
-        }
-        $I->click('.admin_edit_bnt');
+        $this->tryAdminFindAndRead($I);
+        $I->click('.glyphicon-pencil');
 
-        $I->fillField('#elements-content',$contr_string);
+        $this->title = $this->faker->text(40);
+        $I->fillField('#elements-title',$this->title);
 
         $I->click('Save');
 
+        if (method_exists($I, 'wait')) {
+            $I->wait(5);
+        }
+
         $I->see('Element successfully update');
+
+        $this->tryAdminFindAndRead($I);
     }
     //D
     public function tryAdminFindAndDelete(AcceptanceTester $I)
     {
-        $this->tryAdminPage($I);
-        $I->fillField('#admin-elements-search-all','testtitle1111');
-        if (method_exists($I, 'wait')) {
-            $I->wait(5);
-        }
-        $I->click('.admin_delete_bnt');
-        $I->click('.admin_delete_confirm_bnt');
+        $this->tryAdminFindAndRead($I);
+        $I->click('.glyphicon-trash');
+        $I->acceptPopup();
 
-        $I->dontSee('testtitle1111');
+        $I->dontSee($this->title);
     }
 }

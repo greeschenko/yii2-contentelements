@@ -37,6 +37,7 @@ class Elements extends \yii\db\ActiveRecord
 
     public $statuslist;
     public $typelist;
+    private $module;
 
     public function init()
     {
@@ -50,8 +51,10 @@ class Elements extends \yii\db\ActiveRecord
 
         $this->typelist = [
             self::TYPE_STATIC=>Yii::t('cont_elem', 'Static'),
-            self::TYPE_DINAMIC=>Yii::t('cont_elem', 'Dinamic'),
+            self::TYPE_DINAMIC=>Yii::t('cont_elem', 'Dynamic'),
         ];
+
+        $this->module = Yii::$app->getModule('pages');
     }
 
     /**
@@ -75,6 +78,7 @@ class Elements extends \yii\db\ActiveRecord
     public function beforeSave($insert)
     {
         $this->user_id = Yii::$app->user->identity->id;
+        $this->urld = str_replace(' ','-',$this->urld);
 
         return parent::beforeSave($insert);
     }
@@ -103,7 +107,7 @@ class Elements extends \yii\db\ActiveRecord
             'id' => Yii::t('app', 'ID'),
             'title' => Yii::t('app', 'Title'),
             'urld' => Yii::t('app', 'Urld'),
-            'user_id' => Yii::t('app', 'User ID'),
+            'user_id' => Yii::t('app', 'Creator'),
             'parent' => Yii::t('app', 'Parent'),
             'preview' => Yii::t('app', 'Preview'),
             'content' => Yii::t('app', 'Content'),
@@ -141,5 +145,26 @@ class Elements extends \yii\db\ActiveRecord
         }
 
         return $res;
+    }
+
+    public function getUser()
+    {
+        return $this->hasOne($this->module->userclass, ['id' => 'user_id']);
+    }
+
+    public function getParentData()
+    {
+        return $this->hasOne(self::classname(), ['id' => 'parent']);
+    }
+
+    public function getAdminsList()
+    {
+        $usermodel = $this->module->userclass;
+        $data = $usermodel::find()
+            ->select('id, username')
+            ->andWhere(['role' => 'admin'])
+            ->all();
+
+        return ArrayHelper::map($data,'id','username');
     }
 }
