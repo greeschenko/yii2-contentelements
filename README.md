@@ -12,10 +12,12 @@ add
 
 ```
 "repositories": [
+    ...
     {
         "type": "git",
         "url": "https://github.com/greeschenko/yii2-contentelements.git"
     }
+    ...
 ],
 ```
 
