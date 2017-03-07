@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use greeschenko\file\widgets\FilesGallery;
+use greeschenko\file\models\Attachments;
 use yii\helpers\HtmlPurifier;
 
 /* @var $this yii\web\View */
@@ -24,12 +25,14 @@ $this->params['breadcrumbs'] = $model->genBreacrumbs();
     <article>
         <?= HtmlPurifier::process($model->content) ?>
     </article>
-    <hr>
-    <div class="element_atachments">
-        <p class="lead"><?=Yii::t('cont_elem', 'Atachments')?></p>
-        <?= FilesGallery::widget([
-            'groupcode' => $model->atachments,
-        ]);?>
-    </div>
-    <hr>
+    <?php if (Attachments::getCountByCode($model->atachments) > 0): ?>
+        <hr>
+        <div class="element_atachments">
+            <p class="lead"><?=Yii::t('cont_elem', 'Atachments')?></p>
+            <?= FilesGallery::widget([
+                'groupcode' => $model->atachments,
+            ]);?>
+        </div>
+        <hr>
+    <?php endif; ?>
 </div>
