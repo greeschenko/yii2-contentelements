@@ -10,6 +10,7 @@ use yii\data\ActiveDataProvider;
  */
 class ElementsSearch extends Elements
 {
+    public $all;
     /**
      * @inheritdoc
      */
@@ -17,7 +18,8 @@ class ElementsSearch extends Elements
     {
         return [
             [['id', 'user_id', 'parent', 'created_at', 'updated_at', 'type', 'status'], 'integer'],
-            [['title', 'urld', 'preview', 'content', 'tags', 'meta_title', 'meta_descr', 'meta_keys', 'atachments'], 'safe'],
+            [['title', 'urld', 'preview', 'content', 'tags',
+            'meta_title', 'meta_descr', 'meta_keys', 'atachments','all'], 'safe'],
         ];
     }
 
@@ -67,6 +69,17 @@ class ElementsSearch extends Elements
         ]);
 
         $query->andFilterWhere(['like', 'title', $this->title])
+            ->andFilterWhere([
+                'or',
+                ['like','title',$this->all],
+                ['like', 'content', $this->all],
+                ['like', 'preview', $this->all],
+                ['like', 'content', $this->all],
+                ['like', 'tags', $this->all],
+                ['like', 'meta_title', $this->all],
+                ['like', 'meta_descr', $this->all],
+                ['like', 'meta_keys', $this->all],
+            ])
             ->andFilterWhere(['like', 'urld', $this->urld])
             ->andFilterWhere(['like', 'preview', $this->preview])
             ->andFilterWhere(['like', 'content', $this->content])

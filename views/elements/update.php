@@ -9,7 +9,6 @@ $this->title = Yii::t('cont_elem', 'Update {modelClass}: ', [
     'modelClass' => 'Elements',
 ]) . $model->title;
 $this->params['breadcrumbs'][] = ['label' => Yii::t('cont_elem', 'Elements'), 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->title, 'url' => ['view', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = Yii::t('cont_elem', 'Update');
 ?>
 <div class="elements-update">

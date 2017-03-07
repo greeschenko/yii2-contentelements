@@ -110,6 +110,23 @@ class ElementsController extends Controller
         }
     }
 
+    public function actionCopy($id)
+    {
+        $model = $this->findModel($id);
+
+        $clone = new Elements();
+        $clone->attributes = $model->attributes;
+        $clone->urld = strtolower($clone->urld);
+        $clone->urld = str_replace(['.',' ','_'],'-',$clone->urld);
+        $clone->urld = time().'-copy';
+        $clone->title = $clone->title.'-copy';
+        if ($clone->save()) {
+            return $this->redirect(['update', 'id' => $clone->id]);
+        } else {
+            throw new \yii\web\HttpException(500 ,Yii::t('cont_elem', 'Element copy error.'));
+        }
+    }
+
     /**
      * Deletes an existing Elements model.
      * If deletion is successful, the browser will be redirected to the 'index' page.

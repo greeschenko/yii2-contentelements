@@ -5,6 +5,8 @@ namespace greeschenko\contentelements\controllers;
 use Yii;
 use yii\web\Controller;
 use greeschenko\contentelements\models\Elements;
+use greeschenko\contentelements\models\ElementsSearch;
+use yii\helpers\ArrayHelper;
 
 class DefaultController extends Controller
 {
@@ -16,30 +18,34 @@ class DefaultController extends Controller
             $model = Elements::find()->where(['urld' => $urld])->one();
             if ($model != null) {
                 if ($model->type == Elements::TYPE_DINAMIC) {
-                    $this->renderDynamic($model);
+                    $searchModel = new ElementsSearch();
+                    $t = ArrayHelper::merge(['ElementsSearch' => ['parent' => $model->id]],Yii::$app->request->queryParams);
+                    /*print_r($t);
+                    die;*/
+                    $dataProvider = $searchModel->search($t);
+
+                    return $this->render('dynamic',[
+                        'model' => $model,
+                        'searchModel' => $searchModel,
+                        'dataProvider' => $dataProvider,
+                    ]);
                 } else {
-                    $this->renderStatic($model);
+                    return $this->render('static',[
+                        'model' => $model,
+                    ]);
                 }
             } else {
                 throw new \yii\web\HttpException(404 ,Yii::t('cont_elem', 'Sorry, page not found.'));
             }
         } else {
-            $this->renderRoot();
+            $searchModel = new ElementsSearch();
+            $t = ArrayHelper::merge(['ElementsSearch' => ['parent' => 0]],Yii::$app->request->queryParams);
+            $dataProvider = $searchModel->search($t);
+
+            return $this->render('dynamic',[
+                'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
+            ]);
         }
-    }
-
-    public function renderRoot()
-    {
-        return $this->render('root');
-    }
-
-    public function renderDynamic($model)
-    {
-        return $this->render('dynamic',['model' => $model]);
-    }
-
-    public function renderStatic($model)
-    {
-        return $this->render('static',['model' => $model]);
     }
 }

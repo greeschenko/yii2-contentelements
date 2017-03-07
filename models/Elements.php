@@ -5,6 +5,7 @@ namespace greeschenko\contentelements\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
+use greeschenko\file\models\Attachments;
 
 /**
  * This is the model class for table "{{%elements}}".
@@ -90,11 +91,16 @@ class Elements extends \yii\db\ActiveRecord
     {
         return [
             [['title'], 'required'],
+
             [['urld'], 'required'],
             [['urld'], 'unique'],
+            ['urld', 'match', 'pattern' => '/^[a-z0-9-]+$/',
+                'message' => Yii::t('cont_elem', 'urld can only contain characters a-z, numbers 0-9 and "-".')],
+            [['urld'], 'string', 'max' => 64,'min' => '3'],
+
             [['user_id', 'parent', 'created_at', 'updated_at', 'type', 'status'], 'integer'],
-            [['preview', 'content'], 'string'],
-            [['title', 'urld', 'tags', 'meta_title', 'meta_descr', 'meta_keys', 'atachments'], 'string', 'max' => 255],
+            [['content'], 'string'],
+            [['title', 'tags', 'meta_title', 'meta_descr', 'meta_keys', 'atachments','preview'], 'string', 'max' => 255],
         ];
     }
 
@@ -104,22 +110,22 @@ class Elements extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('app', 'ID'),
-            'title' => Yii::t('app', 'Title'),
-            'urld' => Yii::t('app', 'Urld'),
-            'user_id' => Yii::t('app', 'Creator'),
-            'parent' => Yii::t('app', 'Parent'),
-            'preview' => Yii::t('app', 'Preview'),
-            'content' => Yii::t('app', 'Content'),
-            'tags' => Yii::t('app', 'Tags'),
-            'meta_title' => Yii::t('app', 'Meta Title'),
-            'meta_descr' => Yii::t('app', 'Meta Descr'),
-            'meta_keys' => Yii::t('app', 'Meta Keys'),
-            'atachments' => Yii::t('app', 'Atachments'),
-            'created_at' => Yii::t('app', 'Created At'),
-            'updated_at' => Yii::t('app', 'Updated At'),
-            'type' => Yii::t('app', 'Type'),
-            'status' => Yii::t('app', 'Status'),
+            'id' => Yii::t('cont_elem', 'ID'),
+            'title' => Yii::t('cont_elem', 'Title'),
+            'urld' => Yii::t('cont_elem', 'Urld'),
+            'user_id' => Yii::t('cont_elem', 'Creator'),
+            'parent' => Yii::t('cont_elem', 'Parent'),
+            'preview' => Yii::t('cont_elem', 'Preview'),
+            'content' => Yii::t('cont_elem', 'Content'),
+            'tags' => Yii::t('cont_elem', 'Tags'),
+            'meta_title' => Yii::t('cont_elem', 'Meta Title'),
+            'meta_descr' => Yii::t('cont_elem', 'Meta Descr'),
+            'meta_keys' => Yii::t('cont_elem', 'Meta Keys'),
+            'atachments' => Yii::t('cont_elem', 'Atachments'),
+            'created_at' => Yii::t('cont_elem', 'Created At'),
+            'updated_at' => Yii::t('cont_elem', 'Updated At'),
+            'type' => Yii::t('cont_elem', 'Type'),
+            'status' => Yii::t('cont_elem', 'Status'),
         ];
     }
 
@@ -166,5 +172,74 @@ class Elements extends \yii\db\ActiveRecord
             ->all();
 
         return ArrayHelper::map($data,'id','username');
+    }
+
+    public function genFullPathArray()
+    {
+        $res[] = [
+            'title' => $this->title,
+            'urld' => $this->urld,
+        ];
+        $data = $this->parentData;
+
+        while (isset($data)) {
+            $res[] = [
+                'title' => $data->title,
+                'urld' => $data->urld,
+            ];
+            $data = $data->parentData;
+        }
+
+        $res = array_reverse($res);
+
+        return $res;
+    }
+
+    public function genBreacrumbs()
+    {
+        $res[] = [
+            'label' => $this->title,
+        ];
+        $data = $this->parentData;
+
+        while (isset($data)) {
+            $res[] = [
+                'label' => $data->title,
+                'url' => $data->genUrl(),
+            ];
+            $data = $data->parentData;
+        }
+
+        $res = array_reverse($res);
+
+        return $res;
+    }
+
+    public function genUrl()
+    {
+        $res = [];
+        $data = $this->genFullPathArray();
+        foreach ($data as $one) {
+            $res[] = $one['urld'];
+        }
+
+        $res = '/'.implode('/',$res).'.html';
+
+        return $res;
+    }
+
+    public function getTumb()
+    {
+        $data = Attachments::find()
+            ->joinWith('file')
+            ->where(['group' => $this->atachments])
+            ->andWhere(['files.type' => '1'])
+            ->one();
+
+        if ($data != null) {
+            return $data->file->getData();
+        }
+
+        return null;
     }
 }

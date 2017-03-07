@@ -16,29 +16,35 @@ $model->atachments = ($model->atachments != '')
 
 <div class="elements-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin([
+        'id' => 'auction-form',
+    ]); ?>
 
     <div class="form-group text-right">
-    <?= Html::submitButton(
-        $model->isNewRecord
-            ? Yii::t('cont_elem', 'Create')
-            : Yii::t('cont_elem', 'Save'),
-        ['class' => 'btn btn-success','id' => 'create_element_submit']) ?>
-    <?= Html::a(
-        Yii::t('cont_elem', 'Create New'),
-        ['create'],
-        ['class' => 'btn btn-default','target' => '_blunk']) ?>
-    <?php if (!$model->isNewRecord): ?>
+        <?= Html::submitButton(
+            $model->isNewRecord
+                ? Yii::t('cont_elem', 'Create')
+                : Yii::t('cont_elem', 'Save'),
+            ['class' => 'btn btn-success','id' => 'create_element_submit']) ?>
         <?= Html::a(
-            Yii::t('cont_elem', 'Copy'),
-            ['copy','id' => $model->id],
-            ['class' => 'btn btn-info']) ?>
-        <?= Html::a(
-            Yii::t('cont_elem', 'Delete'),
-            ['delete','id' => $model->id],
-            ['class' => 'btn btn-danger']) ?>
-    <?php endif; ?>
+            Yii::t('cont_elem', 'Create New'),
+            ['create'],
+            ['class' => 'btn btn-default','target' => '_blunk']) ?>
+        <?php if (!$model->isNewRecord): ?>
+            <?= Html::a(
+                Yii::t('cont_elem', 'Copy'),
+                ['copy','id' => $model->id],
+                ['class' => 'btn btn-info','target' => '_blunk']) ?>
+            <?= Html::a(Yii::t('cont_elem', 'Delete'),
+                ['delete', 'id' => $model->id], [
+                    'class' => 'btn btn-danger',
+                    'data' => [
+                        'confirm' => Yii::t('cont_elem', 'Are you sure you want to delete this item?'),
+                    ],
+                ])?>
+        <?php endif; ?>
     </div>
+
     <div class="row">
         <div class="col-md-9">
             <?= $form->field($model, 'title')->textInput(['maxlength' => true]) ?>

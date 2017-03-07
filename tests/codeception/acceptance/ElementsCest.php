@@ -5,6 +5,7 @@ class ElementsCest
     private $faker;
     private $title;
     private $tags;
+    private $urld;
 
     public function _before(AcceptanceTester $I)
     {
@@ -71,9 +72,10 @@ class ElementsCest
         }
 
         $this->title = $this->faker->text(20);
+        $this->urld = $this->faker->word().'-'.$this->faker->word();
 
         $I->fillField('#elements-title',$this->title);
-        $I->fillField('#elements-urld',$this->faker->text(20));
+        $I->fillField('#elements-urld',$this->urld);
         $I->fillField('#elements-preview',$this->faker->text(40));
 
         $I->fillField('.redactor-editor',$this->faker->text(160));
@@ -85,9 +87,9 @@ class ElementsCest
         $I->fillField('#elements-meta_descr',$this->faker->text(70));
         $I->fillField('#elements-meta_keys','test, testtest, testtesttest');
 
-        $I->selectOption('#elements-type',2);
+        $I->selectOption('#elements-type',1);
         $I->selectOption('#elements-status',2);
-        $I->selectOption('#elements-parent',rand(4,5));
+        $I->selectOption('#elements-parent',rand(29,30));
 
         $I->click('#element_upload_file');
         $I->attachFile('#element_upload_file','testfile.jpg');
@@ -120,12 +122,14 @@ class ElementsCest
     public function tryPublicPageRead(AcceptanceTester $I)
     {
         $I->amOnPage('/pages');
-        $I->fillField('#elements-search-all','testtitle1111');
+        $I->fillField('#elementssearch-all',$this->title);
+        $I->click('Search');
         if (method_exists($I, 'wait')) {
             $I->wait(5);
         }
-        $I->click('.view_bnt');
-        $I->see('testtitle1111');
+        $I->see($this->title);
+        $I->click('More');
+        $I->see($this->title);
     }
     //U
     public function tryAdminFindAndUpdate(AcceptanceTester $I)
@@ -147,12 +151,12 @@ class ElementsCest
         $this->tryAdminFindAndRead($I);
     }
     //D
-    public function tryAdminFindAndDelete(AcceptanceTester $I)
+    /*public function tryAdminFindAndDelete(AcceptanceTester $I)
     {
         $this->tryAdminFindAndRead($I);
         $I->click('.glyphicon-trash');
         $I->acceptPopup();
 
         $I->dontSee($this->title);
-    }
+    }*/
 }
