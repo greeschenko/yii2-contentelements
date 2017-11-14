@@ -5,6 +5,7 @@ namespace greeschenko\contentelements\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 use greeschenko\file\models\Attachments;
 
 /**
@@ -29,12 +30,12 @@ use greeschenko\file\models\Attachments;
  */
 class Elements extends \yii\db\ActiveRecord
 {
-    const STATUS_DRAFT=1;
-    const STATUS_PUBLISHED=2;
-    const STATUS_ARCHIVED=3;
+    const STATUS_DRAFT = 1;
+    const STATUS_PUBLISHED = 2;
+    const STATUS_ARCHIVED = 3;
 
-    const TYPE_STATIC=1;
-    const TYPE_DINAMIC=2;
+    const TYPE_STATIC = 1;
+    const TYPE_DINAMIC = 2;
 
     public $statuslist;
     public $typelist;
@@ -47,19 +48,19 @@ class Elements extends \yii\db\ActiveRecord
         $this->statuslist = [
             self::STATUS_DRAFT => Yii::t('cont_elem', 'Draft'),
             self::STATUS_PUBLISHED => Yii::t('cont_elem', 'Published'),
-            self::STATUS_ARCHIVED =>  Yii::t('cont_elem', 'Archived'),
+            self::STATUS_ARCHIVED => Yii::t('cont_elem', 'Archived'),
         ];
 
         $this->typelist = [
-            self::TYPE_STATIC=>Yii::t('cont_elem', 'Static'),
-            self::TYPE_DINAMIC=>Yii::t('cont_elem', 'Dynamic'),
+            self::TYPE_STATIC => Yii::t('cont_elem', 'Static'),
+            self::TYPE_DINAMIC => Yii::t('cont_elem', 'Dynamic'),
         ];
 
         $this->module = Yii::$app->getModule('pages');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function tableName()
     {
@@ -67,7 +68,7 @@ class Elements extends \yii\db\ActiveRecord
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function behaviors()
     {
@@ -79,13 +80,13 @@ class Elements extends \yii\db\ActiveRecord
     public function beforeSave($insert)
     {
         $this->user_id = Yii::$app->user->identity->id;
-        $this->urld = str_replace(' ','-',$this->urld);
+        $this->urld = str_replace(' ', '-', $this->urld);
 
         return parent::beforeSave($insert);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rules()
     {
@@ -95,17 +96,17 @@ class Elements extends \yii\db\ActiveRecord
             [['urld'], 'required'],
             [['urld'], 'unique'],
             ['urld', 'match', 'pattern' => '/^[a-z0-9-]+$/',
-                'message' => Yii::t('cont_elem', 'urld can only contain characters a-z, numbers 0-9 and "-".')],
-            [['urld'], 'string', 'max' => 64,'min' => '3'],
+                'message' => Yii::t('cont_elem', 'urld can only contain characters a-z, numbers 0-9 and "-".'), ],
+            [['urld'], 'string', 'max' => 64, 'min' => '3'],
 
             [['user_id', 'parent', 'created_at', 'updated_at', 'type', 'status'], 'integer'],
             [['content'], 'string'],
-            [['title', 'tags', 'meta_title', 'meta_descr', 'meta_keys', 'atachments','preview'], 'string', 'max' => 255],
+            [['title', 'tags', 'meta_title', 'meta_descr', 'meta_keys', 'atachments', 'preview'], 'string', 'max' => 255],
         ];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attributeLabels()
     {
@@ -129,7 +130,7 @@ class Elements extends \yii\db\ActiveRecord
         ];
     }
 
-    public function getParentList($parent=0,$lvl=0)
+    public function getParentList($parent = 0, $lvl = 0)
     {
         $res = [];
         if ($parent == 0) {
@@ -144,9 +145,9 @@ class Elements extends \yii\db\ActiveRecord
 
         if (count($data) > 0) {
             foreach ($data as $one) {
-                $lvlstr = str_repeat('--',$lvl);
+                $lvlstr = str_repeat('--', $lvl);
                 $res[$one->id] = $lvlstr.' '.$one->title;
-                $res = ArrayHelper::merge($res,$this->getParentList($one->id,$lvl+1));
+                $res = ArrayHelper::merge($res, $this->getParentList($one->id, $lvl + 1));
             }
         }
 
@@ -171,7 +172,7 @@ class Elements extends \yii\db\ActiveRecord
             ->andWhere(['role' => 'admin'])
             ->all();
 
-        return ArrayHelper::map($data,'id','username');
+        return ArrayHelper::map($data, 'id', 'username');
     }
 
     public function genFullPathArray()
@@ -215,15 +216,20 @@ class Elements extends \yii\db\ActiveRecord
         return $res;
     }
 
-    public function genUrl()
+    public function genUrl($absolute = false)
     {
         $res = [];
+        $root = '/';
         $data = $this->genFullPathArray();
         foreach ($data as $one) {
             $res[] = $one['urld'];
         }
 
-        $res = '/'.implode('/',$res).'.html';
+        if ($absolute) {
+            $root = Url::toRoute('/', 'https');
+        }
+
+        $res = $root.implode('/', $res).'.html';
 
         return $res;
     }

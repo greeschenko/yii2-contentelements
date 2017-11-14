@@ -4,6 +4,7 @@ namespace greeschenko\contentelements\controllers;
 
 use Yii;
 use yii\web\Controller;
+use yii\helpers\Url;
 use greeschenko\contentelements\models\Elements;
 use greeschenko\contentelements\models\ElementsSearch;
 use yii\helpers\ArrayHelper;
@@ -44,6 +45,74 @@ class DefaultController extends Controller
                 'searchModel' => $searchModel,
                 'dataProvider' => $dataProvider,
             ]);
+        }
+    }
+
+    /**
+     * create base sitemap.
+     */
+    public function actionGenBaseSitemap()
+    {
+        $dom = new \DOMDocument('1.0', 'utf-8');
+        $urlset = $dom->createElement('urlset');
+        $urlset->setAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+
+        $data = [
+            Url::toRoute('/', 'https'),
+        ];
+
+        $pages = Elements::find()
+            ->where(['status' => 2])
+            ->all();
+
+        foreach ($pages as $page) {
+            $data[] = $page->genUrl(true);
+        }
+
+        foreach ($data as $one) {
+            $url = $dom->createElement('url');
+            $item = [
+               'loc' => $one,
+            ];
+
+            foreach ($item as $key => $value) {
+                $elem = $dom->createElement($key);
+                $elem->appendChild($dom->createTextNode($value));
+                $url->appendChild($elem);
+            }
+
+            $urlset->appendChild($url);
+        }
+
+        $dom->appendChild($urlset);
+
+        $dom->save('base.sitemap.xml');
+
+        return $this->gzCompressFile('base.sitemap.xml');
+    }
+
+    public function gzCompressFile($source, $level = 9)
+    {
+        $dest = $source.'.gz';
+        $mode = 'wb'.$level;
+        $error = false;
+        if ($fp_out = gzopen($dest, $mode)) {
+            if ($fp_in = fopen($source, 'rb')) {
+                while (!feof($fp_in)) {
+                    gzwrite($fp_out, fread($fp_in, 1024 * 512));
+                }
+                fclose($fp_in);
+            } else {
+                $error = true;
+            }
+            gzclose($fp_out);
+        } else {
+            $error = true;
+        }
+        if ($error) {
+            return false;
+        } else {
+            return $dest;
         }
     }
 }
