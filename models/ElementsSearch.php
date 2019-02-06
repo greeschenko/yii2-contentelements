@@ -11,20 +11,21 @@ use yii\data\ActiveDataProvider;
 class ElementsSearch extends Elements
 {
     public $all;
+
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rules()
     {
         return [
             [['id', 'user_id', 'parent', 'created_at', 'updated_at', 'type', 'status'], 'integer'],
             [['title', 'urld', 'preview', 'content', 'tags',
-            'meta_title', 'meta_descr', 'meta_keys', 'atachments','all'], 'safe'],
+            'meta_title', 'meta_descr', 'meta_keys', 'atachments', 'all', ], 'safe'],
         ];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function scenarios()
     {
@@ -33,7 +34,7 @@ class ElementsSearch extends Elements
     }
 
     /**
-     * Creates data provider instance with search query applied
+     * Creates data provider instance with search query applied.
      *
      * @param array $params
      *
@@ -44,6 +45,7 @@ class ElementsSearch extends Elements
         $query = Elements::find();
 
         // add conditions that should always apply here
+        $query->orderBy('updated_at DESC');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -71,7 +73,7 @@ class ElementsSearch extends Elements
         $query->andFilterWhere(['like', 'title', $this->title])
             ->andFilterWhere([
                 'or',
-                ['like','title',$this->all],
+                ['like', 'title', $this->all],
                 ['like', 'content', $this->all],
                 ['like', 'preview', $this->all],
                 ['like', 'content', $this->all],
