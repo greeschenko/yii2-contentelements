@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
+
 /* @var $this yii\web\View */
 /* @var $searchModel greeschenko\contentelements\models\ElementsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -14,7 +15,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
     <?php Pjax::begin(); ?>
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+    <?php // echo $this->render('_search', ['model' => $searchModel]);?>
 
     <p class="text-right">
         <?= Html::a(Yii::t('cont_elem', 'Create Element'), ['create'], ['class' => 'btn btn-success']) ?>
@@ -29,16 +30,16 @@ $this->params['breadcrumbs'][] = $this->title;
             'title',
             'urld:url',
             [
-                'attribute'=>'user_id',
-                'filter'=>$searchModel->getAdminsList(),
-                'content'=>function ($data) {
+                'attribute' => 'user_id',
+                'filter' => $searchModel->getAdminsList(),
+                'content' => function ($data) {
                     return $data->user->username;
                 },
             ],
             [
-                'attribute'=>'parent',
-                'filter'=>$searchModel->getParentList(),
-                'content'=>function ($data) {
+                'attribute' => 'parent',
+                'filter' => $searchModel->getParentList(),
+                'content' => function ($data) {
                     $res = Yii::t('cont_elem', 'root page');
                     if ($data->parent != 0 and isset($data->parentData)) {
                         $res = $data->parentData->title;
@@ -48,17 +49,17 @@ $this->params['breadcrumbs'][] = $this->title;
                 },
             ],
             [
-                'attribute'=>'type',
-                'filter'=>$searchModel->typelist,
-                'content'=>function ($data) {
+                'attribute' => 'type',
+                'filter' => $searchModel->typelist,
+                'content' => function ($data) {
                     return $data->typelist[$data->type];
                 },
             ],
             [
-                'attribute'=>'status',
-                'filter'=>$searchModel->statuslist,
-                'content'=>function ($data) {
-                    return $data->statuslist[$data->type];
+                'attribute' => 'status',
+                'filter' => $searchModel->statuslist,
+                'content' => function ($data) {
+                    return $data->statuslist[$data->status];
                 },
             ],
             'tags',
@@ -73,7 +74,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{update}<br>{delete}'
+                'template' => '{update}<br>{delete}',
             ],
         ],
     ]); ?>
