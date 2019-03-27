@@ -59,7 +59,26 @@ class DefaultController extends Controller
 
         $data = [
             Url::toRoute('/', 'https'),
+            Url::toRoute('/prozorrosale2/auctions/sale', 'https'),
+            Url::toRoute('/prozorrosale2/auctions/uz', 'https'),
+            Url::toRoute('/prozorrosale2/auctions/geonadra', 'https'),
+            Url::toRoute('/prozorrosale2/auctions/land-lease', 'https'),
+            Url::toRoute('/prozorrosale2/auctions/small-scale-privatization', 'https'),
+            Url::toRoute('/prozorrosale2/auctions/lease', 'https'),
+            Url::toRoute('/prozorrosale/auctions/public', 'https'),
+            Url::toRoute('/prozorrosale/auctions/land', 'https'),
+            Url::toRoute('/prozorrosale/auctions/realestate', 'https'),
+            Url::toRoute('/prozorrosale/auctions/rightofclaim', 'https'),
+            Url::toRoute('/prozorrosale/auctions/transport', 'https'),
         ];
+
+        if (Yii::$app->hasModule('setam')) {
+            $data[] = Url::toRoute('/setam/items/index', 'https');
+        }
+
+        if (Yii::$app->hasModule('auction')) {
+            $data[] = Url::toRoute('/auction/deals/publiclist', 'https');
+        }
 
         $pages = Elements::find()
             ->where(['status' => 2])
