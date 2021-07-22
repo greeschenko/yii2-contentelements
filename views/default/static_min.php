@@ -21,6 +21,9 @@ $this->params['breadcrumbs'] = $model->genBreacrumbs();
         <h1><?= Html::encode($model->title) ?></h1>
     </header>
     <article>
-        <?= HtmlPurifier::process($model->content) ?>
+<?php
+        /*<?= HtmlPurifier::process($model->content) ?>*/
+?>
+        <?= $model->content ?>
     </article>
 </div>
